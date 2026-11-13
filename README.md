@@ -51,5 +51,34 @@ docker build --build-arg WEBSERVER=app.html -t httpd .
 
 # ----------------------------------------------------------------------------------------------------------------------- 
 
+# DOCKERFILE FOR TOMCAT and JAVA app
+
+FROM tomcat:9-jdk8
+RUN rm -rf /usr/local/tomcat/webapps/*.war
+COPY /target/*.war /usr/local/tomcat/webapps/
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
 
 
+# USING ARG WHEN THERE ARE MULTIPLE JAR FILES
+FROM tomcat:9-jdk8
+WORKDIR /usr/local/tomcat
+# Build-time argument: WAR file name
+ARG WAR_FILE=target/addressbook.war
+# Remove default Tomcat applications
+RUN rm -rf webapps/*
+# Copy selected WAR file and deploy as ROOT application
+COPY ${WAR_FILE} webapps/ROOT.war
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+
+addressbook-project/
+├── Dockerfile
+├── pom.xml
+└── target/
+    ├── addressbook.war
+    └── employee.war
+
+docker build --build-arg WAR_FILE=target/addressbook.war -t tomcat-app:addressbook .
+docker build --build-arg WAR_FILE=target/employee.war -t tomcat-app:employee .
+  
